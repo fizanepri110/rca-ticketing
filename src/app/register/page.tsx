@@ -25,6 +25,13 @@ function RegisterForm() {
     const { data, error: signUpError } = await supabaseBrowser.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          nom: nom.trim(),
+          telephone: phone,
+          role: 'client'
+        }
+      }
     })
 
     if (signUpError || !data.user) {
@@ -33,21 +40,22 @@ function RegisterForm() {
       return
     }
 
-    // 2. Insertion du profil dans la table profiles
+    // 2. Insertion ou mise à jour du profil (Upsert)
     const { error: profileError } = await supabaseBrowser
       .from('profiles')
-      .insert({
+      .upsert({
         id:        data.user.id,
-        email,
+        email:     email,
         nom:       nom.trim(),
         telephone: phone,
         role:      'client',
-      })
+      }, { onConflict: 'id' })
 
     if (profileError) {
-      setError('Compte créé mais erreur profil. Contactez le support.')
-      setLoading(false)
-      return
+      console.warn('Upsert profile error (ignoring to allow login):', profileError.message)
+      // On logue l'erreur mais on ne bloque pas la redirection.
+      // Si le trigger a fait le job ou qu'il y a un souci RLS temporaire,
+      // l'utilisateur est de toute façon bien enregistré dans auth.users.
     }
 
     router.push('/')
