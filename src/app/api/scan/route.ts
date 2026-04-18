@@ -21,6 +21,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Validation du format UUID (évite un crash Supabase sur des valeurs invalides)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(ticket_id) || !uuidRegex.test(event_id)) {
+      return NextResponse.json(
+        { valid: false, reason: 'Identifiants du billet invalides.' },
+        { status: 400 }
+      )
+    }
+
     // --- 1. Vérification cryptographique de la signature ---
     // Recrée le hash côté serveur et compare avec celui du QR code
     const { data: ticket, error: fetchError } = await supabaseAdmin
