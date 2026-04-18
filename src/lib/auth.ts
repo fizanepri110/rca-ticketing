@@ -34,30 +34,34 @@ export async function getServerProfile(): Promise<UserProfile | null> {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch (error) {
-            // Ignore les erreurs de set cookie quand on est dans un composant serveur
+          } catch {
+            // Ignore les erreurs de cookies en lecture seule (Server Components).
+            // Les cookies ne peuvent être modifiés que dans les Server Actions ou Route Handlers.
           }
         },
       },
     }
   )
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  if (authError || !user) {
-    return null
-  }
+  if (!user) return null
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .select('id, email, role, telephone, nom')
     .eq('id', user.id)
     .single()
 
-  if (profileError) {
-    console.error(`[getServerProfile] Erreur profil pour l'utilisateur ${user.id}:`, profileError.message)
-    return null
-  }
+  if (!profile) return null
 
-  return profile ?? null
+  return {
+    id: profile.id,
+    email: profile.email ?? user.email ?? '',
+    role: (profile.role as UserRole) ?? 'client',
+    telephone: profile.telephone ?? '',
+    nom: profile.nom ?? '',
+  }
 }
