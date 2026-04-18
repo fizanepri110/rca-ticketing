@@ -27,14 +27,14 @@ export interface CinetPayInitResponse {
 export async function initCinetPayTransaction(
   payload: CinetPayInitPayload
 ): Promise<CinetPayInitResponse> {
-  // TODO: Remplacer par le vrai Site ID trouvé dans CinetPay > Solution
-  const siteId = process.env.CINETPAY_SITE_ID && process.env.CINETPAY_SITE_ID !== 'INCONNU_A_TROUVER' 
-    ? process.env.CINETPAY_SITE_ID 
-    : '5873744';
+  const siteId = process.env.CINETPAY_SITE_ID
+  const apiKey = process.env.CINETPAY_API_KEY
 
-  const apiKey = process.env.CINETPAY_API_KEY && process.env.CINETPAY_API_KEY !== 'ta_cle_api_cinetpay'
-    ? process.env.CINETPAY_API_KEY
-    : 'sk_test_Ch1nj2FVWRFNlyNL5Mx57exH';
+  if (!siteId || !apiKey) {
+    throw new Error(
+      '[CinetPay] Variables CINETPAY_SITE_ID et CINETPAY_API_KEY manquantes dans le .env'
+    )
+  }
 
   const body = {
     apikey: apiKey,

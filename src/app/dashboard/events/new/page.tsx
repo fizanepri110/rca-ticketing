@@ -95,7 +95,7 @@ export default function NewEventPage() {
   const [date, setDate]           = useState('')
   const [heure, setHeure]         = useState('20:00')
   const [description, setDescription] = useState('')
-  const [statut, setStatut]       = useState<'brouillon' | 'publie'>('brouillon')
+  const [statut, setStatut]       = useState<'brouillon' | 'en_attente'>('brouillon')
 
   // --- Image ---
   const [imageFile, setImageFile]   = useState<File | null>(null)
@@ -418,20 +418,20 @@ export default function NewEventPage() {
                   Statut de publication
                 </label>
                 <div className="grid grid-cols-2 gap-3">
-                  {(['brouillon', 'publie'] as const).map((s) => (
+                  {(['brouillon', 'en_attente'] as const).map((s) => (
                     <button
                       key={s}
                       type="button"
                       onClick={() => setStatut(s)}
                       className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition ${
                         statut === s
-                          ? s === 'publie'
+                          ? s === 'en_attente'
                             ? 'border-green-500 bg-green-50 text-green-700'
                             : 'border-blue-500 bg-blue-50 text-blue-700'
                           : 'border-gray-200 text-gray-500 hover:border-gray-300'
                       }`}
                     >
-                      {s === 'brouillon' ? '📝 Brouillon' : '🚀 Publier maintenant'}
+                      {s === 'brouillon' ? '📝 Brouillon' : '🚀 Soumettre pour validation'}
                     </button>
                   ))}
                 </div>
@@ -569,7 +569,7 @@ export default function NewEventPage() {
                         ? 'bg-green-400 text-green-900'
                         : 'bg-gray-300 text-gray-700'
                     }`}>
-                      {statut === 'publie' ? '🚀 Publié' : '📝 Brouillon'}
+                      {statut === 'en_attente' ? '⏳ En attente' : '📝 Brouillon'}
                     </span>
                   </div>
                 </div>
@@ -667,7 +667,7 @@ export default function NewEventPage() {
               ) : (
                 <>
                   <CheckCircle2 size={18} />
-                  {statut === 'publie' ? 'Publier l\'événement' : 'Enregistrer en brouillon'}
+                  {statut === 'en_attente' ? 'Soumettre l\'événement' : 'Enregistrer en brouillon'}
                 </>
               )}
             </button>

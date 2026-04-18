@@ -28,21 +28,24 @@ function LoginForm() {
       return
     }
 
-    // Vérifier le rôle de l'utilisateur
+    // Vérifier le rôle de l'utilisateur et rediriger
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', authData.user.id)
       .single()
 
-    if (profile?.role === 'organisateur') {
+    const role = profile?.role ?? 'client'
+
+    if (role === 'organisateur') {
       router.push('/dashboard')
-      router.refresh()
+    } else if (role === 'controleur') {
+      router.push('/scan')
     } else {
-      await supabase.auth.signOut()
-      setError('Accès réservé aux organisateurs.')
-      setLoading(false)
+      // Client — redirige vers la page demandée ou l'accueil
+      router.push(redirectTo)
     }
+    router.refresh()
   }
 
   return (
@@ -56,7 +59,7 @@ function LoginForm() {
         </div>
 
         <h1 className="text-xl font-bold text-gray-900 mb-1">Connexion</h1>
-        <p className="text-sm text-gray-500 mb-6">Accédez à votre espace organisateur.</p>
+        <p className="text-sm text-gray-500 mb-6">Accédez à votre compte RCA Ticketing.</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-4">
@@ -95,6 +98,13 @@ function LoginForm() {
             {loading ? <><Loader2 size={18} className="animate-spin" /> Connexion...</> : 'Se connecter'}
           </button>
         </form>
+
+        <p className="text-center text-sm text-gray-500 mt-5">
+          Pas encore de compte ?{' '}
+          <a href="/register" className="text-blue-600 font-semibold hover:underline">
+            S&apos;inscrire
+          </a>
+        </p>
       </div>
     </main>
   )

@@ -1,9 +1,14 @@
+// IMPORTANT: Set environment variables before running this script
+// Required env vars:
+// - NEXT_PUBLIC_SUPABASE_URL (e.g., https://zzbwrltzlhcqkwdtwlux.supabase.co)
+// - SUPABASE_SERVICE_ROLE_KEY (e.g., sb_secret_...)
+
 const { createClient } = require('@supabase/supabase-js');
 
 // On utilise la SERVICE_ROLE_KEY pour avoir les droits administrateur et bypasser le RLS
 const supabase = createClient(
-  'https://zzbwrltzlhcqkwdtwlux.supabase.co',
-  'sb_secret_IyDD4sb1N9pCO22yige-xg_bc5gahs0'
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 async function setOrganisateur() {

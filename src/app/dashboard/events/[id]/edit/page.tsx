@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
@@ -80,9 +80,9 @@ function StepBar({ current }: { current: Step }) {
 // ---------------------------------------------------------------------------
 // Page principale (Édition)
 // ---------------------------------------------------------------------------
-export default function EditEventPage({ params }: { params: { id: string } }) {
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: eventId } = use(params)
   const router = useRouter()
-  const eventId = params.id
 
   const [step, setStep] = useState<Step>('infos')
   const [submitting, setSubmitting] = useState(false)
@@ -95,7 +95,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
   const [date, setDate] = useState('')
   const [heure, setHeure] = useState('20:00')
   const [description, setDescription] = useState('')
-  const [statut, setStatut] = useState<'brouillon' | 'publie'>('brouillon')
+  const [statut, setStatut] = useState<'brouillon' | 'en_attente' | 'publie'>('brouillon')
 
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -438,7 +438,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Statut de publication</label>
                 <div className="grid grid-cols-2 gap-3">
-                  {(['brouillon', 'publie'] as const).map((s) => (
+                  {(['brouillon', 'en_attente', 'publie'] as const).map((s) => (
                     <button
                       key={s}
                       type="button"
@@ -451,7 +451,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                           : 'border-gray-200 text-gray-500 hover:border-gray-300'
                       }`}
                     >
-                      {s === 'brouillon' ? '📝 Brouillon' : '🚀 Publié'}
+                      {s === 'brouillon' ? '📝 Brouillon' : s === 'en_attente' ? '⏳ En attente' : '🚀 Publié'}
                     </button>
                   ))}
                 </div>
@@ -567,9 +567,9 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute bottom-3 left-4">
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                      statut === 'publie' ? 'bg-green-400 text-green-900' : 'bg-gray-300 text-gray-700'
+                      statut === 'publie' ? 'bg-green-400 text-green-900' : statut === 'en_attente' ? 'bg-yellow-400 text-yellow-900' : 'bg-gray-300 text-gray-700'
                     }`}>
-                      {statut === 'publie' ? '🚀 Publié' : '📝 Brouillon'}
+                      {statut === 'publie' ? '🚀 Publié' : statut === 'en_attente' ? '⏳ En attente' : '📝 Brouillon'}
                     </span>
                   </div>
                 </div>

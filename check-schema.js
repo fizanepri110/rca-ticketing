@@ -1,11 +1,7 @@
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient(
-  'https://zzbwrltzlhcqkwdtwlux.supabase.co',
-  'sb_secret_IyDD4sb1N9pCO22yige-xg_bc5gahs0'
-);
-
-async function checkSchema() {
-  const { data, error } = await supabase.from('ticket_types').select('*').limit(1);
-  console.log(data, error);
-}
-checkSchema();
+// CE FICHIER EST OBSOLÈTE — À SUPPRIMER DU REPO
+// Les clés API ne doivent JAMAIS être committées en dur.
+// Utilisez les variables d'environnement (.env.local) à la place.
+//
+// Pour vérifier le schéma, utilisez le dashboard Supabase
+// ou lancez : npx supabase inspect db
+console.log('Ce script est désactivé. Utilisez le dashboard Supabase.')
