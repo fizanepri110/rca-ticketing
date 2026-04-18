@@ -20,16 +20,29 @@ function LoginForm() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
+    if (error || !authData.user) {
       setError('Email ou mot de passe incorrect.')
       setLoading(false)
       return
     }
 
-    router.push(redirectTo)
-    router.refresh()
+    // Vérifier le rôle de l'utilisateur
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .single()
+
+    if (profile?.role === 'organisateur') {
+      router.push('/dashboard')
+      router.refresh()
+    } else {
+      await supabase.auth.signOut()
+      setError('Accès réservé aux organisateurs.')
+      setLoading(false)
+    }
   }
 
   return (

@@ -9,6 +9,7 @@ import {
   CheckCircle2, AlertCircle
 } from 'lucide-react'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { createEventAction } from './actions'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -235,29 +236,26 @@ export default function NewEventPage() {
       // 2. Construction de la date ISO
       const isoDate = new Date(`${date}T${heure}:00`).toISOString()
 
-      // 3. Appel RPC create_event_with_tickets (transaction atomique)
-      const { data: eventId, error } = await supabaseBrowser.rpc(
-        'create_event_with_tickets',
-        {
-          p_titre:           titre.trim(),
-          p_description:     description.trim(),
-          p_lieu:            lieu.trim(),
-          p_date:            isoDate,
-          p_image_url:       finalImageUrl,
-          p_capacite_totale: tickets.reduce((sum, t) => sum + parseInt(t.quantite_max || '0'), 0),
-          p_statut:          statut,
-          p_ticket_types:    tickets.map((t) => ({
-            nom:          t.nom.trim(),
-            prix:         parseInt(t.prix),
-            quantite_max: parseInt(t.quantite_max),
-          })),
-        }
-      )
+      // 3. Appel Server Action
+      const res = await createEventAction({
+        titre: titre.trim(),
+        description: description.trim(),
+        lieu: lieu.trim(),
+        date: isoDate,
+        image_url: finalImageUrl,
+        statut: statut,
+        capacite_totale: tickets.reduce((sum, t) => sum + parseInt(t.quantite_max || '0'), 0),
+        ticket_types: tickets.map((t) => ({
+          nom: t.nom.trim(),
+          prix: parseInt(t.prix),
+          quantite_max: parseInt(t.quantite_max),
+        })),
+      })
 
-      if (error) throw new Error(error.message)
+      if (res.error) throw new Error(res.error)
 
       // 4. Redirection vers le dashboard avec message de succès
-      router.push(`/dashboard?created=${eventId}`)
+      router.push(`/dashboard?created=${res.eventId}`)
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Erreur inattendue.')
     } finally {
