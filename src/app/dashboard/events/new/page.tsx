@@ -565,8 +565,8 @@ export default function NewEventPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div className="absolute bottom-3 left-4">
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                      statut === 'publie'
-                        ? 'bg-green-400 text-green-900'
+                      statut === 'en_attente'
+                        ? 'bg-yellow-300 text-yellow-900'
                         : 'bg-gray-300 text-gray-700'
                     }`}>
                       {statut === 'en_attente' ? '⏳ En attente' : '📝 Brouillon'}

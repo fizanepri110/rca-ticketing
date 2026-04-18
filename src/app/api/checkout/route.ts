@@ -53,14 +53,17 @@ export async function POST(req: NextRequest) {
       }
     )
 
-    if (ticketError || !ticketType) {
+    // rpc() avec RETURNS TABLE renvoie un tableau — on prend la 1ère ligne
+    const ticketRow = Array.isArray(ticketType) ? ticketType[0] : ticketType
+
+    if (ticketError || !ticketRow) {
       return NextResponse.json(
         { error: 'Places insuffisantes ou type de billet introuvable.' },
         { status: 409 }
       )
     }
 
-    const { available, unit_price, event_title, organizer_name } = ticketType
+    const { available, unit_price, event_title, organizer_name } = ticketRow
     if (!available) {
       return NextResponse.json(
         { error: 'Plus de places disponibles pour cette catégorie.' },
@@ -105,9 +108,9 @@ export async function POST(req: NextRequest) {
       notify_url: `${baseUrl}/api/webhook/cinetpay`,
       return_url: `${baseUrl}/payment/success?ref=${transactionId}`,
       customer_phone_number: phone_number,
-      customer_name: organizer_name,
-      customer_surname: 'Client',
-      customer_email: 'contact@rcaticketing.com',
+      customer_name: profile.nom || 'Client',
+      customer_surname: profile.nom?.split(' ').slice(1).join(' ') || 'RCA',
+      customer_email: profile.email || 'contact@rcaticketing.com',
     })
 
     if (cinetPayResponse.code !== '201' || !cinetPayResponse.data?.payment_url) {

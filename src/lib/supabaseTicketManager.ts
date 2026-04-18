@@ -72,7 +72,7 @@ export async function createTicketsForTransaction(
   }
 
   // Empêche le re-traitement d'une transaction déjà traitée (idempotence)
-  if (transaction.status === 'PAID') {
+  if (transaction.status === 'SUCCESS') {
     console.warn(`[supabaseTicketManager] Transaction ${transactionId} déjà traitée — skip.`)
     return []
   }
@@ -94,17 +94,17 @@ export async function createTicketsForTransaction(
   }
 
   // -------------------------------------------------------------------------
-  // 3. Passage de la transaction en PAID (atomique)
+  // 3. Passage de la transaction en SUCCESS (atomique)
   // -------------------------------------------------------------------------
   const { error: updateTxError } = await supabaseAdmin
     .from('transactions')
-    .update({ status: 'PAID', paid_at: new Date().toISOString() })
+    .update({ status: 'SUCCESS', paid_at: new Date().toISOString() })
     .eq('id', transactionId)
     .eq('status', 'PENDING') // Condition atomique — ne met à jour que si encore PENDING
 
   if (updateTxError) {
     throw new Error(
-      `[supabaseTicketManager] Impossible de passer la transaction en PAID : ${updateTxError.message}`
+      `[supabaseTicketManager] Impossible de passer la transaction en SUCCESS : ${updateTxError.message}`
     )
   }
 
@@ -130,10 +130,9 @@ export async function createTicketsForTransaction(
     id: gt.ticket_id,
     transaction_id: transactionId,
     client_id: transaction.user_id,
-    event_id: transaction.event_id,
     ticket_type_id: transaction.ticket_type_id,
-    qr_code: gt.qr_raw_string,  // JSON signé (pas l'image base64 — on économise l'espace)
-    status: 'paye',              // Statut conforme à /api/scan ('paye' | 'utilise' | 'annule')
+    secret_hash: gt.payload.secret_hash,
+    status: 'paye',
     created_at: new Date().toISOString(),
   }))
 

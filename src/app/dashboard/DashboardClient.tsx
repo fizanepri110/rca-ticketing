@@ -17,7 +17,7 @@ interface Event {
   titre: string
   lieu: string
   date: string
-  statut: 'brouillon' | 'publie'
+  statut: 'brouillon' | 'en_attente' | 'publie'
 }
 
 interface Stats {
@@ -53,13 +53,15 @@ function formatDate(iso: string) {
   })
 }
 
-const STATUS_STYLE = {
-  brouillon: 'bg-gray-100 text-gray-600',
-  publie:    'bg-green-100 text-green-700',
+const STATUS_STYLE: Record<string, string> = {
+  brouillon:  'bg-gray-100 text-gray-600',
+  en_attente: 'bg-yellow-100 text-yellow-700',
+  publie:     'bg-green-100 text-green-700',
 }
-const STATUS_LABEL = {
-  brouillon: 'Brouillon',
-  publie:    'Actif',
+const STATUS_LABEL: Record<string, string> = {
+  brouillon:  'Brouillon',
+  en_attente: 'En attente',
+  publie:     'Actif',
 }
 
 // ---------------------------------------------------------------------------

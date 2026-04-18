@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -31,26 +31,44 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
 }
 
 // ---------------------------------------------------------------------------
-// Composant QR Code inline (depuis le JSON stocké)
+// Composant QR Code inline — génère le vrai QR scannable côté client
 // ---------------------------------------------------------------------------
-function QRCodeDisplay({ qrJson }: { qrJson: string }) {
-  // Le qr_code en base contient le JSON signé.
-  // On affiche un placeholder visuel avec les infos clés.
-  // L'image QR réelle est générée côté serveur au moment du webhook.
-  // Pour l'affichage client, on génère le QR via une lib côté client.
-  let ticketId = ''
-  try {
-    const parsed = JSON.parse(qrJson)
-    ticketId = parsed.ticket_id?.slice(0, 8) ?? ''
-  } catch {
-    // ignore
-  }
+function QRCodeDisplay({ ticket }: { ticket: TicketWithEvent }) {
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Reconstruit le payload JSON identique à celui attendu par /api/scan
+    const payload = JSON.stringify({
+      ticket_id: ticket.id,
+      client_id: ticket.client_id,
+      event_id: ticket.event_id,
+      issued_at: ticket.created_at,
+      secret_hash: ticket.secret_hash,
+    })
+
+    // Import dynamique de qrcode (fonctionne côté browser via canvas)
+    import('qrcode').then((QRCode) => {
+      QRCode.toDataURL(payload, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 280,
+        color: { dark: '#1e3a5f', light: '#ffffff' },
+      }).then(setQrDataUrl)
+    })
+  }, [ticket])
 
   return (
     <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center gap-3">
-      <QrCode size={120} className="text-blue-700" strokeWidth={1} />
+      {qrDataUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={qrDataUrl} alt="QR Code du billet" width={220} height={220} className="rounded-lg" />
+      ) : (
+        <div className="w-[220px] h-[220px] flex items-center justify-center">
+          <QrCode size={80} className="text-gray-300 animate-pulse" strokeWidth={1} />
+        </div>
+      )}
       <p className="text-xs text-gray-400 font-mono">
-        {ticketId ? `#${ticketId}...` : 'QR Code'}
+        #{ticket.id.slice(0, 8)}...
       </p>
       <p className="text-xs text-gray-500 text-center">
         Présentez ce QR code à l&apos;entrée de l&apos;événement.
@@ -128,9 +146,9 @@ function TicketCard({ ticket }: { ticket: TicketWithEvent }) {
           </button>
         )}
 
-        {expanded && ticket.qr_code && (
+        {expanded && ticket.secret_hash && (
           <div className="mt-4">
-            <QRCodeDisplay qrJson={ticket.qr_code} />
+            <QRCodeDisplay ticket={ticket} />
           </div>
         )}
       </div>

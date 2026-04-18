@@ -9,7 +9,9 @@ import MesBilletsClient from './MesBilletsClient'
 export interface TicketWithEvent {
   id: string
   status: string
-  qr_code: string
+  secret_hash: string
+  client_id: string
+  event_id: string
   created_at: string
   ticket_type_nom: string
   event_titre: string
@@ -27,9 +29,10 @@ async function getClientTickets(userId: string): Promise<TicketWithEvent[]> {
     .select(`
       id,
       status,
-      qr_code,
+      secret_hash,
+      client_id,
       created_at,
-      ticket_types ( nom, events ( titre, lieu, date, image_url ) )
+      ticket_types ( nom, events ( id, titre, lieu, date, image_url ) )
     `)
     .eq('client_id', userId)
     .order('created_at', { ascending: false })
@@ -44,7 +47,9 @@ async function getClientTickets(userId: string): Promise<TicketWithEvent[]> {
     return {
       id: t.id,
       status: t.status,
-      qr_code: t.qr_code,
+      secret_hash: t.secret_hash ?? '',
+      client_id: t.client_id,
+      event_id: event.id ?? '',
       created_at: t.created_at,
       ticket_type_nom: ticketType.nom ?? 'Standard',
       event_titre: event.titre ?? '',

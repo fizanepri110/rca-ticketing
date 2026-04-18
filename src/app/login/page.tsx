@@ -37,7 +37,9 @@ function LoginForm() {
 
     const role = profile?.role ?? 'client'
 
-    if (role === 'organisateur') {
+    if (role === 'admin') {
+      router.push('/admin')
+    } else if (role === 'organisateur') {
       router.push('/dashboard')
     } else if (role === 'controleur') {
       router.push('/scan')
