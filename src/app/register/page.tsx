@@ -35,7 +35,16 @@ function RegisterForm() {
     })
 
     if (signUpError || !data.user) {
-      setError(signUpError?.message ?? 'Erreur lors de la création du compte.')
+      const msg = signUpError?.message ?? ''
+      if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already been registered')) {
+        setError('Un compte avec cet email existe déjà. Essayez de vous connecter.')
+      } else if (msg.toLowerCase().includes('password')) {
+        setError('Le mot de passe doit contenir au moins 6 caractères.')
+      } else if (msg.toLowerCase().includes('email')) {
+        setError('Adresse email invalide.')
+      } else {
+        setError(msg || 'Erreur lors de la création du compte.')
+      }
       setLoading(false)
       return
     }
@@ -81,6 +90,11 @@ function RegisterForm() {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm mb-4">
             {error}
+            {error.includes('connecter') && (
+              <Link href="/login" className="block mt-2 text-blue-600 font-semibold hover:underline">
+                → Se connecter
+              </Link>
+            )}
           </div>
         )}
 
